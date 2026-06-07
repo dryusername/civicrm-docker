@@ -1,0 +1,52 @@
+version: "3.8"
+
+services:
+  # Optional: remove this service if you will use a Coolify-managed DB resource.
+  db:
+    image: mariadb:10.6
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+      MYSQL_CHARSET: "utf8mb4"
+      MYSQL_COLLATION: "utf8mb4_unicode_ci"
+    volumes:
+      - civicrm_db_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-u", "root", "-p${MYSQL_ROOT_PASSWORD}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  app:
+    image: civicrm/civicrm:latest
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      # DB connection: either set individual CIVICRM_DB_* vars (below) or a single CIVICRM_DSN.
+      CIVICRM_DB_HOST: ${CIVICRM_DB_HOST:-db}
+      CIVICRM_DB_PORT: ${CIVICRM_DB_PORT:-3306}
+      CIVICRM_DB_NAME: ${CIVICRM_DB_NAME:-${MYSQL_DATABASE}}
+      CIVICRM_DB_USER: ${CIVICRM_DB_USER:-${MYSQL_USER}}
+      CIVICRM_DB_PASSWORD: ${CIVICRM_DB_PASSWORD:-${MYSQL_PASSWORD}}
+      # OR supply a single DSN (example format): mysql://user:pass@host:3306/dbname
+      # CIVICRM_DSN: ${CIVICRM_DSN}
+      CIVICRM_UF_BASEURL: ${CIVICRM_UF_BASEURL:-https://civicrm.humanisterna.net}
+      # Admin credentials for initial install (mark as secrets in Coolify)
+      CIVICRM_ADMIN_USER: ${CIVICRM_ADMIN_USER}
+      CIVICRM_ADMIN_PASS: ${CIVICRM_ADMIN_PASS}
+      # Optional: APACHE_PORT override (container internal port)
+      # APACHE_PORT: ${APACHE_PORT}
+    volumes:
+      - civicrm_www:/var/www/html
+      - civicrm_ext:/var/www/html/sites/default/files/civicrm/ext
+
+volumes:
+  civicrm_db_data:
+  civicrm_www:
+  civicrm_ext:
+
