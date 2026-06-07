@@ -7,7 +7,7 @@ services:
     restart: unless-stopped
     environment:
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
-      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_DATABASE: 'CIVICRM_DB'
       MYSQL_USER: ${MYSQL_USER}
       MYSQL_PASSWORD: ${MYSQL_PASSWORD}
       MYSQL_CHARSET: "utf8mb4"
@@ -28,11 +28,11 @@ services:
         condition: service_healthy
     environment:
       # DB connection: either set individual CIVICRM_DB_* vars (below) or a single CIVICRM_DSN.
-      CIVICRM_DB_HOST: ${CIVICRM_DB_HOST:-db}
-      CIVICRM_DB_PORT: ${CIVICRM_DB_PORT:-3306}
-      CIVICRM_DB_NAME: ${CIVICRM_DB_NAME:-${MYSQL_DATABASE}}
-      CIVICRM_DB_USER: ${CIVICRM_DB_USER:-${MYSQL_USER}}
-      CIVICRM_DB_PASSWORD: ${CIVICRM_DB_PASSWORD:-${MYSQL_PASSWORD}}
+      CIVICRM_DB_HOST: db
+      CIVICRM_DB_PORT: 3306
+      CIVICRM_DB_NAME: 'CIVICRM_DB_*'
+      CIVICRM_DB_USER: ${MYSQL_USER}
+      CIVICRM_DB_PASSWORD: ${MYSQL_PASSWORD}
       # OR supply a single DSN (example format): mysql://user:pass@host:3306/dbname
       # CIVICRM_DSN: ${CIVICRM_DSN}
       CIVICRM_UF_BASEURL: ${CIVICRM_UF_BASEURL:-https://civicrm.humanisterna.net}
